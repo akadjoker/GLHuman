@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.tmp": "cpp",
+        "string": "cpp",
+        "*.tcc": "cpp"
+    }
+}
