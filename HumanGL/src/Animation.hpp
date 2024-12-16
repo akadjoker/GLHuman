@@ -86,6 +86,8 @@ public:
     {
         keyframes.clear();
     }
+    void Save(const char *filename);
+    void Load(const char *filename);
 
     Pose getPoseAtTime(float time);
 };

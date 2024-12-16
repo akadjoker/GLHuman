@@ -121,6 +121,7 @@ public:
     bool OpenWrite(const std::string &filename);
     void Close();
 
+    void WriteString(const std::string &line);
     void WriteLine(const std::string &line);
     void WriteFloat(float value);
     void WriteInt(int value);
@@ -128,11 +129,13 @@ public:
     bool ReadLine(std::string &line);
     bool ReadFloat(float &value);
     bool ReadInt(int &value);
+    char ReadChar();
     
     void SkipWhitespace();
 
     bool IsOpen() const { return isOpen; }
     bool IsWriteMode() const { return isWriteMode; }
+    bool IsEOF() const { return feof(file); }
 
 private:
     FILE* file;

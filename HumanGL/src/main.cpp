@@ -8,32 +8,7 @@ extern "C" const char *__lsan_default_suppressions()
            "leak:SDL_DBus\n";
 }
 
-void SerializeAnimation(const char* filename,Animation *animation) 
-{
-   // StreamText ss;
 
-    for (auto &kf : animation->keyframes)
-    {
-        float time = kf.time;
-        const Pose pose = kf.pose;
-
-        // Formato: tempo:torso,head,upperArmL,upperArmR,foreArmL,foreArmR,thighL,thighR,calfL,calfR|
-            // ss << time << ":";
-          
-            // ss << pose.torsoRotation << ",";
-            // ss << pose.headRotation << ",";
-            // ss << pose.upperArmRotation[0] << ",";
-            // ss << pose.upperArmRotation[1] << ",";
-            // ss << pose.forearmRotation[0] << ",";
-            // ss << pose.forearmRotation[1] << ",";
-            // ss << pose.thighRotation[0] << ",";
-            // ss << pose.thighRotation[1] << ",";
-            // ss << pose.calfRotation[0] << ",";
-            // ss << pose.calfRotation[1] << "|";
-    }
-
-    //return ss.
-}
 
 int main(int argc, char *argv[])
 {
@@ -142,16 +117,16 @@ int main(int argc, char *argv[])
         human.playAnimation("jump");
     };
 
-    Button *bDance = window->CreateButton("Dance", 20, 40, 100, 20);
-    bDance->SetkeyMap(true, SDLK_3);
-    bDance->OnClick = [&]()
+    Button *bFight = window->CreateButton("Fight", 20, 40, 100, 20);
+    bFight->SetkeyMap(true, SDLK_3);
+    bFight->OnClick = [&]()
     {
         human.playAnimation("dance");
     };
 
-    Button *bFight = window->CreateButton("Fight", 140, 40, 100, 20);
-    bFight->SetkeyMap(true, SDLK_4);
-    bFight->OnClick = [&]()
+    Button *bDance = window->CreateButton("Dance", 140, 40, 100, 20);
+    bDance->SetkeyMap(true, SDLK_4);
+    bDance->OnClick = [&]()
     {
         human.playAnimation("fight");
     };
@@ -208,9 +183,11 @@ int main(int argc, char *argv[])
     Window *windowTimeLine = widgets->CreateWindow("Time Line", 2, 310, 365, 100);
     AnimationTimeline *timeLine = new AnimationTimeline(30, 20, 305, 20);
     windowTimeLine->Add(timeLine);
-    Button *bClear = windowTimeLine->CreateButton("Clear", 20, 50, 80, 20);
+    Button *bClear = windowTimeLine->CreateButton("Clear", 15, 50, 80, 20);
     bClear->OnClick = [&]()
     {
+        if (!CanAnimate)
+            return;
         Animation *animation = human.GetAnimationManager().getAnimation("manual");
         if (animation)
         {
@@ -219,9 +196,11 @@ int main(int argc, char *argv[])
         timeLine->Clear();
     };
 
-    Button *bSet = windowTimeLine->CreateButton("Set", 120, 50, 80, 20);
+    Button *bSet = windowTimeLine->CreateButton("Set", 100, 50, 80, 20);
     bSet->OnClick = [&]()
     {
+        if (!CanAnimate)
+            return;
         Animation *animation = human.GetAnimationManager().getAnimation("manual");
         if (animation)
         {
@@ -243,11 +222,29 @@ int main(int argc, char *argv[])
         }
     };
 
-    Button *bLoad = windowTimeLine->CreateButton("Clear", 220, 50, 80, 20);
-    bLoad->OnClick = [&]() {
-
+    Button *bSave = windowTimeLine->CreateButton("Save", 185, 50, 80, 20);
+    bSave->OnClick = [&]() 
+    {
+        if (!CanAnimate)
+            return;
+        Animation *animation = human.GetAnimationManager().getAnimation("manual");
+        if (animation)
+        {
+            animation->Save("manual.anim");
+        }
     };
 
+  Button *bLoad = windowTimeLine->CreateButton("Load", 275, 50, 80, 20);
+    bLoad->OnClick = [&]() 
+    {
+        if (!CanAnimate)
+            return;
+        Animation *animation = human.GetAnimationManager().getAnimation("manual");
+        if (animation)
+        {
+            animation->Load("manual.anim");
+        }
+    };
     while (device.Running())
     {
         if (ABORT)

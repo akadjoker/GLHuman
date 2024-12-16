@@ -550,18 +550,23 @@ void TextFile::WriteLine(const std::string &line)
         return;
     fprintf(file, "%s\n", line.c_str());
 }
-
+void TextFile::WriteString(const std::string &line)
+{
+    if (!isOpen || !isWriteMode)
+        return;
+    fprintf(file, "%s", line.c_str());
+}
 void TextFile::WriteFloat(float value)
 {
     if (!isOpen || !isWriteMode)
         return;
-    fprintf(file, "%f ", value);
+    fprintf(file, "%f", value);
 }
 void TextFile::WriteInt(int value)
 {
     if (!isOpen || !isWriteMode)
         return;
-    fprintf(file, "%d ", value);
+    fprintf(file, "%d", value);
 }
 bool TextFile::ReadLine(std::string &line)
 {
@@ -594,6 +599,12 @@ bool TextFile::ReadInt(int &value)
     if (!isOpen || isWriteMode)
         return false;
     return fscanf(file, "%d", &value) == 1;
+}
+char TextFile::ReadChar()
+{
+    if (!isOpen || isWriteMode)
+        return '\0';
+    return fgetc(file);
 }
 void TextFile::SkipWhitespace()
 {

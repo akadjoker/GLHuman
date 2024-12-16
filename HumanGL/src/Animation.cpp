@@ -77,6 +77,96 @@ Humanoid::~Humanoid()
     
 }
 
+void Animation::Save(const char *filename)
+{
+   
+
+    TextFile file;
+
+    if (file.OpenWrite(filename))
+    {
+        
+
+        file.WriteInt(keyframes.size());
+        file.WriteString("\n");
+        for (auto &kf : keyframes)
+        {
+            float time = kf.time;
+            const Pose pose = kf.pose;
+
+            file.WriteFloat(time);file.WriteString(" ");
+            file.WriteFloat(pose.torsoRotation);file.WriteString(" ");
+            file.WriteFloat(pose.headRotation);file.WriteString(" ");
+            file.WriteFloat(pose.upperArmRotation[0]);file.WriteString(" ");
+            file.WriteFloat(pose.upperArmRotation[1]);file.WriteString(" ");
+            file.WriteFloat(pose.forearmRotation[0]);file.WriteString(" ");
+            file.WriteFloat(pose.forearmRotation[1]);file.WriteString(" ");
+            file.WriteFloat(pose.thighRotation[0]);file.WriteString(" ");
+            file.WriteFloat(pose.thighRotation[1]);file.WriteString(" ");
+            file.WriteFloat(pose.calfRotation[0]);file.WriteString(" ");
+            file.WriteFloat(pose.calfRotation[1]);
+            file.WriteString("\n");
+
+            // Formato: tempo:torso,head,upperArmL,upperArmR,foreArmL,foreArmR,thighL,thighR,calfL,calfR|
+
+        }
+
+    file.Close();
+    
+  }
+}
+
+void Animation::Load(const char *filename)
+{
+
+
+    TextFile file;
+    clear();
+    if (file.OpenRead(filename))
+    {
+
+        int count = 0;
+        if (file.ReadInt(count))
+        {
+             file.ReadChar(); // read newline
+
+            for (int i = 0; i < count; i++)
+            {
+                float time;
+                Pose pose;
+          
+                file.ReadFloat(time);
+                file.ReadFloat(pose.torsoRotation);
+                file.ReadFloat(pose.headRotation);
+                file.ReadFloat(pose.upperArmRotation[0]);
+                file.ReadFloat(pose.upperArmRotation[1]);
+                file.ReadFloat(pose.forearmRotation[0]);
+                file.ReadFloat(pose.forearmRotation[1]);
+                file.ReadFloat(pose.thighRotation[0]);
+                file.ReadFloat(pose.thighRotation[1]);
+                file.ReadFloat(pose.calfRotation[0]);
+                file.ReadFloat(pose.calfRotation[1]);
+
+                LogInfo("Time: %f Torso: %f Head: %f ArmL: %f ArmR: %f ForeArmL: %f ForeArmR: %f ThighL: %f ThighR: %f CalfL: %f CalfR: %f", time, pose.torsoRotation,
+                        pose.headRotation,
+                        pose.upperArmRotation[0],
+                        pose.upperArmRotation[1],
+                        pose.forearmRotation[0],
+                        pose.forearmRotation[1],
+                        pose.thighRotation[0],
+                        pose.thighRotation[1],
+                        pose.calfRotation[0],
+                        pose.calfRotation[1]);
+
+                addKeyframe(pose, time);
+            
+             }
+        }
+
+        file.Close();
+    }
+}
+
 Pose Animation::getPoseAtTime(float time)
 {
     if (keyframes.empty())
@@ -192,6 +282,8 @@ void AnimationManager::createDanceAnimation()
     // Volta para pose inicial
     dance.addKeyframe(pose1, 1.5f);
 
+    dance.Save("dance.anim");
+
     addAnimation(dance);
 }
 
@@ -236,6 +328,8 @@ void AnimationManager::createFighterAnimation()
     // Retorno à posição de guarda
     fight.addKeyframe(fightStance, 1.0f);
 
+    fight.Save("fight.anim");
+
     addAnimation(fight);
 }
 
@@ -278,6 +372,9 @@ void AnimationManager::createDefaultAnimations()
 
     walk.addKeyframe(pose1, 1.0f); // Volta à pose inicial
 
+    walk.Save("walk.anim");
+
+
     addAnimation(walk);
 
     Animation jump("jump", false);
@@ -304,6 +401,9 @@ void AnimationManager::createDefaultAnimations()
 
     Pose jumpEnd = jumpStart;
     jump.addKeyframe(jumpEnd, 1.0f);
+
+    jump.Save("jump.anim");
+
 
     addAnimation(jump);
 }
