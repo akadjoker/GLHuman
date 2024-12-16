@@ -9,8 +9,6 @@ struct Vertex
     float position[3];
 };
 
-
-
 struct Pose
 {
     Vec3 position;
@@ -39,9 +37,9 @@ struct Pose
         Pose result;
         result.torsoRotation = a.torsoRotation * (1 - t) + b.torsoRotation * t;
         result.headRotation = a.headRotation * (1 - t) + b.headRotation * t;
-        result.position.x = a.position.x  * (1 - t) + b.position.x * t;
-        result.position.y = a.position.y  * (1 - t) + b.position.y * t;
-        result.position.z = a.position.z  * (1 - t) + b.position.z * t;
+        result.position.x = a.position.x * (1 - t) + b.position.x * t;
+        result.position.y = a.position.y * (1 - t) + b.position.y * t;
+        result.position.z = a.position.z * (1 - t) + b.position.z * t;
 
         for (int i = 0; i < 2; i++)
         {
@@ -72,6 +70,8 @@ public:
     {
     }
 
+   
+
     Animation(const std::string &name, bool loop = true)
         : name(name), loop(loop), duration(0.0f) {}
 
@@ -86,7 +86,7 @@ public:
     {
         keyframes.clear();
     }
-    
+
     Pose getPoseAtTime(float time);
 };
 
@@ -115,15 +115,14 @@ public:
         nextAnimation = "";
     }
 
-    std::string const CurrentAnimation() {return currentAnimation;}
+    std::string const CurrentAnimation() { return currentAnimation; }
 
     void addAnimation(const Animation &anim)
     {
         animations[anim.name] = anim;
     }
 
-    
-    Animation* getAnimation(const std::string name);
+    Animation *getAnimation(const std::string name);
 
     void playAnimation(const std::string &name, bool shouldLoop = true, bool resetTime = true);
 
@@ -140,7 +139,6 @@ public:
     void setCurrentTime(float time) { currentTime = time; }
 
     const std::string &getCurrentAnimationName() const { return currentAnimation; }
-    
 
     bool isLooping() const { return looping; }
     void setLooping(bool loop) { looping = loop; }
@@ -150,7 +148,6 @@ public:
     void createFighterAnimation();
     void createDefaultAnimations();
     Pose getDefaultPose();
-
 };
 
 class Humanoid
@@ -179,29 +176,26 @@ public:
     Humanoid();
 
     ~Humanoid();
-   
+
     void reset();
 
-
-    AnimationManager& GetAnimationManager() { return animManager;}
-    
+    AnimationManager &GetAnimationManager() { return animManager; }
 
     void render(Shader &shader);
-    
-     float getTorsoRotation() const { return torsoRotation; }
+
+    float getTorsoRotation() const { return torsoRotation; }
     float getHeadRotation() const { return headRotation; }
-    
-    float getUpperArmRotation(bool isRight) const {return upperArmRotation[isRight ? 1 : 0];}
-    
-    float getForearmRotation(bool isRight) const {return forearmRotation[isRight ? 1 : 0];}
-    
-    float getThighRotation(bool isRight) const {return thighRotation[isRight ? 1 : 0];}
-    
-    float getCalfRotation(bool isRight) const {return calfRotation[isRight ? 1 : 0];}
+
+    float getUpperArmRotation(bool isRight) const { return upperArmRotation[isRight ? 1 : 0]; }
+
+    float getForearmRotation(bool isRight) const { return forearmRotation[isRight ? 1 : 0]; }
+
+    float getThighRotation(bool isRight) const { return thighRotation[isRight ? 1 : 0]; }
+
+    float getCalfRotation(bool isRight) const { return calfRotation[isRight ? 1 : 0]; }
 
     Vec3 getPosition() const { return position; }
-    void setPosition(const Vec3& pos) { position = pos; }
-
+    void setPosition(const Vec3 &pos) { position = pos; }
 
     void setTorsoRotation(float angle) { torsoRotation = angle; }
     void setHeadRotation(float angle) { headRotation = angle; }
@@ -227,7 +221,7 @@ public:
     }
 
     void animate(float deltaTime);
-   
+
     void playAnimation(const std::string &name)
     {
         animManager.playAnimation(name);
@@ -261,9 +255,7 @@ private:
     }
 };
 
-
-
-class AnimationTimeline : public Widget 
+class AnimationTimeline : public Widget
 {
 private:
     std::map<float, Pose> keyframes;
@@ -272,10 +264,10 @@ private:
     float gridHeight;
     int divisions;
     Pose currentPose;
-    
+
 public:
-    AnimationTimeline(float x, float y, float width, float height) 
-        : Widget(), selectedTime(0), divisions(10) 
+    AnimationTimeline(float x, float y, float width, float height)
+        : Widget(), selectedTime(0), divisions(10)
     {
         m_position.x = x;
         m_position.y = y;
@@ -283,7 +275,6 @@ public:
         m_size.y = height;
         gridWidth = width / divisions;
         gridHeight = height;
-        
     }
     void SetPose(Pose &pose)
     {
@@ -291,63 +282,58 @@ public:
     }
     void OnUpdate(float delta) override
     {
-        m_bounds = Rectangle(GetRealX(),GetRealY(), m_size.x+1, m_size.y+1);
-        
+        m_bounds = Rectangle(GetRealX(), GetRealY(), m_size.x + 1, m_size.y + 1);
     }
-    void OnDraw(RenderBatch* batch) override 
+    void OnDraw(RenderBatch *batch) override
     {
-        Skin * skin = GUI::Instance()->GetSkin();
-        Font * font = skin->GetFont();
+        Skin *skin = GUI::Instance()->GetSkin();
+        Font *font = skin->GetFont();
         font->SetSize(10);
-        batch->DrawRectangle(GetRealX()-(gridWidth/2)-8, GetRealY()-15, m_size.x+(gridWidth)+21, m_size.y+(gridWidth/2)+2,(m_focus)?Color(208,108,108):Color(108,108,108), false);
-        batch->DrawRectangle(GetRealX()-(gridWidth/2)-5, GetRealY(), m_size.x+(gridWidth)+15, m_size.y,  Color(128,128,128), true);
+        batch->DrawRectangle(GetRealX() - (gridWidth / 2) - 8, GetRealY() - 15, m_size.x + (gridWidth) + 21, m_size.y + (gridWidth / 2) + 2, (m_focus) ? Color(208, 108, 108) : Color(108, 108, 108), false);
+        batch->DrawRectangle(GetRealX() - (gridWidth / 2) - 5, GetRealY(), m_size.x + (gridWidth) + 15, m_size.y, Color(128, 128, 128), true);
 
-        for(int i = 0; i <= divisions; i++) 
+        for (int i = 0; i <= divisions; i++)
         {
             float x = GetRealX() + (i * gridWidth);
 
-    
-            font->DrawText(batch, x-2 , GetRealY()-11 ,skin->GetColor(LABEL),"%d",i);
-
+            font->DrawText(batch, x - 2, GetRealY() - 11, skin->GetColor(LABEL), "%d", i);
 
             float time = i / (float)divisions;
-            if(keyframes.find(time) != keyframes.end())
-             {
-                batch->DrawCircle(x, GetRealY() + gridHeight/2, 5, Color(0,0,255), true);
+            if (keyframes.find(time) != keyframes.end())
+            {
+                batch->DrawCircle(x, GetRealY() + gridHeight / 2, 5, Color(0, 0, 255), true);
             }
             // Linha vertical
-            batch->DrawRectangle(x, GetRealY(), 2, m_size.y, Color(64,64,64), true);
-
-
+            batch->DrawRectangle(x, GetRealY(), 2, m_size.y, Color(64, 64, 64), true);
         }
         font->SetSize(14);
 
         // Desenha playhead no cursor
         float playheadX = GetRealX() + (selectedTime * m_size.x);
-        batch->DrawRectangle((playheadX-1), GetRealY(), 2, m_size.y,  Color(255,0,0), true);
+        batch->DrawRectangle((playheadX - 1), GetRealY(), 2, m_size.y, Color(255, 0, 0), true);
     }
 
-    void OnMouseDown(int x, int y, int button) override 
+    void OnMouseDown(int x, int y, int button) override
     {
-         if(button == 1 && IsInside(x,y) ) 
+        if (button == 1 && IsInside(x, y))
         {
             float relativeX = x - GetRealX();
             float time = relativeX / m_size.x;
             time = std::max(0.0f, std::min(1.0f, time));
-            
+
             // Arredona para a divisão mais próxima
             time = roundf(time * divisions) / divisions;
-            
+
             selectedTime = time;
-            
+
             // add/remove
-            if(keyframes.find(time) != keyframes.end()) 
+            if (keyframes.find(time) != keyframes.end())
             {
                 keyframes.erase(time);
-            } else 
+            }
+            else
             {
-                
-                
+
                 keyframes[time] = currentPose;
             }
         }
@@ -355,10 +341,7 @@ public:
     void OnMouseMove(int x, int y)
     {
         m_focus = m_bounds.Contains(x, y);
-        
     }
-
-
 
     void Clear()
     {
@@ -367,7 +350,7 @@ public:
 
     float GetSelectedTime() const { return selectedTime; }
     bool HasKeyframe(float time) const { return keyframes.find(time) != keyframes.end(); }
-    const Pose* GetKeyframe(float time) const 
+    const Pose *GetKeyframe(float time) const
     {
         auto it = keyframes.find(time);
         return it != keyframes.end() ? &it->second : nullptr;
