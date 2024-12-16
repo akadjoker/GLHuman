@@ -15,8 +15,8 @@ class Slider;
 class Label;
 class Button;
 class CheckBox;
-class KeyframeEditor;
-class WindowKeyframeEditor;
+
+
 
 
 enum GUI_COLOR
@@ -61,9 +61,7 @@ class GUI
     Skin* GetSkin() const { return m_skin; }
 
     Window *CreateWindow(const std::string& title, float x, float y, float width, float height);
-    WindowKeyframeEditor *CreatAnimator(const std::string& title, float x, float y, float width, float height);
 
-    
     void Update(float delta);
     void Render(RenderBatch* batch);
     void OnMouseMove(int x, int y);
@@ -109,6 +107,12 @@ public:
     void Remove(Widget* widget);
     void RemoveAll();
 
+
+     Slider *CreateSlider(bool vertical, float x, float y, float width, float height, float min, float max, float value);
+    Label  *CreateLabel(const std::string& text, float x, float y);
+    Button *CreateButton(const std::string& text, float x, float y, float width, float height);
+    CheckBox *CreateCheckBox(const std::string& text, bool state, float x, float y, float width, float height);
+   
     void SetVisible(bool visible) { m_visible = visible; }
     bool IsVisible() const { return m_visible; }
 
@@ -144,6 +148,9 @@ public:
 protected:
     virtual void OnUpdate(float delta);
     virtual void OnDraw(RenderBatch* batch) = 0;
+    virtual void OnPreDraw(RenderBatch* batch) ;
+    virtual void OnPostDraw(RenderBatch* batch) ;
+    
     virtual void OnMouseMove(int x, int y);
     virtual void OnMouseDown(int x, int y, int button);
     virtual void OnMouseUp(int x, int y, int button);
@@ -151,7 +158,7 @@ protected:
     virtual void OnKeyDown(Uint32 key);
     virtual void OnKeyUp(Uint32 key);
 
-    GUI* m_gui;
+
     bool m_visible;
     bool m_focus;
     Widget* m_parent;
@@ -174,11 +181,7 @@ public:
     void SetTitle(const std::string& title) { m_title = title; }
     const std::string& GetTitle() const { return m_title; }
 
-    Slider *CreateSlider(bool vertical, float x, float y, float width, float height, float min, float max, float value);
-    Label  *CreateLabel(const std::string& text, float x, float y);
-    Button *CreateButton(const std::string& text, float x, float y, float width, float height);
-    CheckBox *CreateCheckBox(const std::string& text, bool state, float x, float y, float width, float height);
-    KeyframeEditor* CreateKeyframeEditor(float x, float y, float width, float height);
+   
 
 
 protected:
@@ -312,109 +315,3 @@ private:
 };
 
 
-
-
-class KeyframeEditor : public Widget 
-{
-public:
-    KeyframeEditor(float x, float y, float width, float height);
-    void CreateTrack(const std::string& name, float min, float max);
-
-protected:
-  friend class Window;
-    void OnDraw(RenderBatch* batch) override;
-    void OnMouseDown(int x, int y, int button) override;
-    void OnMouseMove(int x, int y) override;
-    void OnMouseUp(int x, int y, int button) override;
-
-private:
-    struct Keyframe 
-    {
-        int frame;
-        float value;
-        bool selected;
-    };
-
-    struct Track 
-    {
-        std::string name;
-        std::vector<Keyframe> keyframes;
-        float minValue;
-        float maxValue;
-        bool expanded;
-    };
-
-    std::vector<Track> m_tracks;
-    int m_currentFrame;
-    int m_totalFrames;
-    float m_trackHeight;
-    bool m_draggingFrame;
-    Keyframe* m_selectedKeyframe;
-    float m_timelineScale;
-};
-
-
-
-struct AnimationKeyframe {
-    int frame;
-    float headRotation;
-    float torsoRotation;
-    float upperArmLeftRotation;
-    float upperArmRightRotation;
-    float forearmLeftRotation;
-    float forearmRightRotation;
-    float thighLeftRotation;
-    float thighRightRotation;
-    float calfLeftRotation;
-    float calfRightRotation;
-    bool selected;
-};
-
-class WindowKeyframeEditor : public Window
- {
-public:
-    WindowKeyframeEditor(const std::string& title, float x, float y, float width, float height);
-
-    void SetCurrentFrame(int frame);
-    int GetCurrentFrame() const { return m_currentFrame; }
-    void CaptureKeyframe();
-
-    void SaveAnimation(const std::string& filename);
-    void LoadAnimation(const std::string& filename);
-    void Clear(); 
-
-    std::function<void(int)> OnFrameChanged;
-
-protected:
-    void OnDraw(RenderBatch* batch) override;
-    void OnUpdate(float delta) override;
-    // void OnMouseMove(int x, int y) override;
-    // void OnMouseDown(int x, int y, int button) override;
-    // void OnMouseUp(int x, int y, int button) override;
-    void CreateDefaultControls();
-
-private:
-    std::vector<AnimationKeyframe> m_keyframes;
-    int m_currentFrame;
-    int m_totalFrames;
-    bool m_playing;
-    float m_playbackSpeed;
-    
-    // UI Elements
-    Button* m_playButton;
-    Button* m_stopButton;
-    Button* m_captureButton;
-    Button* m_clearButton;
-    Slider* m_frameSlider;
-    
-    // Layout
-    Rectangle m_timelineArea;
-    float m_frameWidth;
-    AnimationKeyframe* m_selectedKeyframe;
-    bool m_draggingFrame;
-
-    void SortKeyframes();
-    void UpdateFrameSlider();
-    AnimationKeyframe* GetKeyframeAtPosition(int x, int y);
-    float InterpolateValue(float startValue, float endValue, float t);
-};

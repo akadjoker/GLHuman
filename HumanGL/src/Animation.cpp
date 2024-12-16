@@ -55,90 +55,12 @@ MeshBuffer *CreateCube()
 }
 
  
-MeshBuffer* CreateSphere(float radius = 1.0f, int stacks = 16, int slices = 32)
-{
-    std::vector<Vertex> vertices;
-    std::vector<unsigned int> indices;
-    
-    // Gerar vértices
-    for(int i = 0; i <= stacks; i++)
-    {
-        float phi = i * Pi / stacks;
-        for(int j = 0; j <= slices; j++)
-        {
-            float theta = j * TwoPi / slices;
-            
-     
-            float x = Sin(phi) * Cos(theta);
-            float y = Cos(phi);
-            float z = Sin(phi) * Sin(theta);
-            
-
-            // float u = (float)j / slices;
-            // float v = (float)i / stacks;
-            
-
-            // Vec3 normal(x, y, z);
-            
-     
-            x *= radius;
-            y *= radius;
-            z *= radius;
-            
-
-            Vertex vertex;
-            vertex.position[0]=x;
-            vertex.position[1]=y;
-            vertex.position[2]=z;
-          
-            
-            vertices.push_back(vertex);
-        }
-    }
-    
-    // Gerar índices
-    for(int i = 0; i < stacks; i++)
-    {
-        for(int j = 0; j < slices; j++)
-        {
-            unsigned int index = (slices + 1) * i + j;
-            
-            // Primeiro triângulo
-            indices.push_back(index);
-            indices.push_back(index + slices + 1);
-            indices.push_back(index + slices + 2);
-            
-            // Segundo triângulo
-            indices.push_back(index);
-            indices.push_back(index + slices + 2);
-            indices.push_back(index + 1);
-        }
-    }
-    
-    // Criar e configurar o MeshBuffer
-    VertexFormat format;
-    format.addElement(VertexType::POSITION, 3); // x, y, z
-
-    // format.addElement(VertexType::NORMAL, 3);   // nx, ny, nz
-    // format.addElement(VertexType::TEXCOORD, 2); // u, v
-    
-    MeshBuffer* mesh = new MeshBuffer();
-    mesh->CreateVertexBuffer(format, vertices.size());
-    mesh->SetVertexData(vertices.data());
-    mesh->CreateIndexBuffer(indices.size());
-    mesh->SetIndexData(indices.data());
-
-
-    
-    
-    return mesh;
-}
 
 
 Humanoid::Humanoid()
 {
     cubeMesh = CreateCube();
-    sphereMesh =CreateSphere();
+    
     animManager.createDefaultAnimations();
     animManager.createDanceAnimation();
     animManager.createFighterAnimation();
@@ -152,11 +74,7 @@ Humanoid::~Humanoid()
         delete cubeMesh;
         cubeMesh=nullptr;
     }
-    if (sphereMesh)
-    {
-        delete sphereMesh;
-        sphereMesh = nullptr;
-    }
+    
 }
 
 Pose Animation::getPoseAtTime(float time)
@@ -323,6 +241,24 @@ void AnimationManager::createFighterAnimation()
 
 void AnimationManager::createDefaultAnimations()
 {
+    Animation manual("manual", true);
+
+    for (int i=0;i<10;i++)
+    {
+        Pose pose; 
+        pose.upperArmRotation[0] = 0;
+        pose.upperArmRotation[1] = 0;
+        pose.thighRotation[0] = 0;
+        pose.thighRotation[1] = 0;
+        float frame = i / 9.0f;
+        manual.addKeyframe(pose, frame);
+        
+    }
+    addAnimation(manual);
+
+
+
+
 
     Animation walk("walk", true);
 
@@ -394,6 +330,18 @@ Pose AnimationManager::getCurrentPose()
     }
     return animations[currentAnimation].getPoseAtTime(currentTime);
 }
+
+Animation* AnimationManager::getAnimation(const std::string name)
+{
+     if (!playing || animations.find(name) == animations.end())
+    {
+        return nullptr;
+    }
+    return &animations[currentAnimation];
+}
+
+
+
 
 void Humanoid::render(Shader &shader)
 {

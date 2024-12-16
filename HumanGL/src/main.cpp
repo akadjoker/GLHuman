@@ -7,6 +7,8 @@ extern "C" const char* __lsan_default_suppressions() {
            "leak:SDL_DBus\n";
 }
 
+
+
 int main(int argc, char *argv[])
 {
     Device device;
@@ -100,8 +102,8 @@ GUI *widgets = GUI::Instance();
 Window *window = widgets->CreateWindow("Mesh Transform", 2, 110, 360, 500);
 window->SetVisible(false);
 
-Window* keyframeEditor =widgets->CreateWindow("Animation Timeline", 2, 680, 900, 250);
-keyframeEditor->CreateKeyframeEditor(5,5,885,200);
+
+
 
 
 // Botões de animação existentes
@@ -112,7 +114,7 @@ bWalk->OnClick = [&]()
     human.playAnimation("walk");
 };
 
-Button *bJump = window->CreateButton("Jump", 200, 10, 100, 20);
+Button *bJump = window->CreateButton("Jump", 140, 10, 100, 20);
 bJump->SetkeyMap(true, SDLK_2);
 bJump->OnClick = [&]() 
 {
@@ -126,11 +128,17 @@ bDance->OnClick = [&]()
     human.playAnimation("dance");
 };
 
-Button *bFight = window->CreateButton("Fight", 200, 40, 100, 20);
+Button *bFight = window->CreateButton("Fight", 140, 40, 100, 20);
 bFight->SetkeyMap(true, SDLK_4);
 bFight->OnClick = [&]() 
 {
     human.playAnimation("fight");
+};
+
+Button *bManual = window->CreateButton("Manual", 250, 40, 100, 20);
+bManual->OnClick = [&]() 
+{
+    human.playAnimation("manual");
 };
 
 
@@ -186,13 +194,61 @@ window->CreateLabel("Calves", 135, 420);
 Slider *leftCalfSlider = window->CreateSlider(false, 20, 450, 120, 20, -180, 180, 0);
 Slider *rightCalfSlider = window->CreateSlider(false, 180, 450, 120, 20, -180, 180, 0);
 
+Window* windowTimeLine = widgets->CreateWindow("Time Line", 2, 310, 365, 100);
+AnimationTimeline *timeLine = new AnimationTimeline(30,20,305,20);
+windowTimeLine->Add(timeLine);
+Button *bClear = windowTimeLine->CreateButton("Clear", 20, 50, 80, 20);
+bClear->OnClick = [&]() 
+{
+    timeLine->Clear();
+};
 
+Button *bSet = windowTimeLine->CreateButton("Set", 120, 50, 80, 20);
+bSet->OnClick = [&]() 
+{
+    Animation *animation= human.GetAnimationManager().getAnimation("manual");
+    if (animation)
+    {
+        Pose pose;
+        pose.upperArmRotation[0] = human.getUpperArmRotation(false);
+        pose.upperArmRotation[1] = human.getUpperArmRotation(true);
+        pose.thighRotation[0] = human.getThighRotation(false);
+        pose.thighRotation[1] = human.getThighRotation(true);
+        pose.torsoRotation = human.
+    //     pose.headRotation = 
 
-//Window* window2 = widgets->CreateWindow("Animation Timeline", 2, 620, 360, 200);
-//WindowKeyframeEditor* keyframeEditor = window2->CreateKeyframeEditor( 2, 620, 360, 200);
+    // float upperArmRotation[2]; // [0] = esquerdo, [1] = direito
+    // float forearmRotation[2];  // [0] = esquerdo, [1] = direito
+    // float thighRotation[2];    // [0] = esquerdo, [1] = direito
+    // float calfRotation[2];     // [0] = esquerdo, [1] = direito
+    }
+};
+     
 
-//keyframeEditor->m_gui = widgets;
-//widgets->Add(keyframeEditor);
+Button *bLoad = windowTimeLine->CreateButton("Load", 220, 50, 80, 20);
+bLoad->OnClick = [&]() 
+{
+    Animation *animation= human.GetAnimationManager().getAnimation("manual");
+    if (animation)
+    {
+        animation->clear();
+        for (int i=0;i<10;i++)
+        {
+
+            float frame = i / 9.0f;
+            if (timeLine->HasKeyframe(frame))
+            {
+                const Pose *pose = timeLine->GetKeyframe(frame);
+                if(pose)
+                {
+                    animation->addKeyframe(*pose,frame);
+                }
+            }
+            
+            
+        }
+    }
+};
 
 
     while (device.Running())
@@ -312,7 +368,8 @@ Slider *rightCalfSlider = window->CreateSlider(false, 180, 450, 120, 20, -180, 1
         Driver::Instance().SetBlend(true);
         Driver::Instance().SetBlendMode(BlendMode::BLEND);
         Driver::Instance().SetDepthTest(false);
-        Driver::Instance().SetDepthWrite(false);
+
+        
 
         shader.Use();
         shader.SetMatrix4("model", identity.m);

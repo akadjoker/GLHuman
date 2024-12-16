@@ -23,7 +23,7 @@ Skin::Skin()
     // m_font = nullptr;
 
     m_font = new Font();
-   // m_font->LoadDefaultFont();
+    // m_font->LoadDefaultFont();
     m_font->Load( "assets/font/font1.fnt");
 }
 
@@ -103,18 +103,11 @@ void GUI::SetSkin(Skin *skin)
 Window *GUI::CreateWindow(const std::string &title, float x, float y, float width, float height)
 {
     Window *window = new Window(title, x, y, width, height);
-    window->m_gui=this;
     m_widgets.push_back(window);
     return window;
 }
 
-WindowKeyframeEditor *GUI::CreatAnimator(const std::string& title, float x, float y, float width, float height)
-{
-    WindowKeyframeEditor *window =  new WindowKeyframeEditor(title, x, y, width, height);
-    window->m_gui=this;
-    m_widgets.push_back(window);
-    return window;
-}
+
 
 void GUI::Update(float delta)
 {
@@ -133,7 +126,7 @@ void GUI::Render(RenderBatch *batch)
         m_widgets[i]->Render(batch);
     }
     batch->SetColor(255,255,255,255);
-    m_skin->GetFont()->SetSize(14);
+    m_skin->GetFont()->SetSize(22);
 }
 
 void GUI::OnMouseMove(int x, int y)
@@ -195,7 +188,7 @@ Widget::Widget()
 {
     m_parent = NULL;
     m_visible = true;
-    m_gui = nullptr;
+
     m_focus = false;
     iskeyMappped = false;
     m_key = 0;
@@ -204,14 +197,24 @@ Widget::Widget()
 
 Widget::~Widget()
 {
-    m_gui= nullptr;
+   
     RemoveAll();
+}
+
+void Widget::OnPreDraw(RenderBatch* batch) 
+{
+    (void)batch;
+
+}
+void Widget::OnPostDraw(RenderBatch* batch) 
+{
+    (void)batch;
 }
 
 void Widget::Render(RenderBatch *batch)
 {
   
-
+    OnPreDraw(batch);
     OnDraw(batch);
     if (m_visible)
     {
@@ -220,7 +223,43 @@ void Widget::Render(RenderBatch *batch)
             m_children[i]->Render(batch);
         }
     }
+    OnPostDraw(batch);
 }
+
+Slider *Widget::CreateSlider(bool vertical, float x, float y, float width, float height, float min, float max, float value)
+{
+    Slider *slider = new Slider(vertical, x, y, width, height, min, max, value);
+     Add(slider);
+    return slider;
+}
+
+Label *Widget::CreateLabel(const std::string &text, float x, float y)
+{
+    
+    Label *label = new Label(text, x, y);
+    Add(label);
+    return label;
+
+}
+
+Button *Widget::CreateButton(const std::string &text, float x, float y, float width, float height)
+{
+
+    Button *button = new Button(text, x, y, width, height);
+    Add(button);
+    return button;
+
+}
+
+CheckBox *Widget::CreateCheckBox(const std::string &text, bool state, float x, float y, float width, float height)
+{
+    
+        CheckBox *checkbox = new CheckBox(text, state, x, y, width, height);
+        Add(checkbox);
+        return checkbox;
+ 
+}
+
 
 void Widget::Add(Widget *widget)
 {
@@ -392,7 +431,8 @@ Window::Window(const std::string &title, float x, float y, float width, float he
 
 void Window::OnDraw(RenderBatch *batch)
 {
-    Skin * skin = m_gui->GetSkin();
+    //if (!m_visible) return ;
+    Skin * skin = GUI::Instance()->GetSkin();
     Font * font = skin->GetFont();
     font->SetBatch(batch);
     
@@ -418,6 +458,7 @@ void Window::OnDraw(RenderBatch *batch)
 
 void Window::OnUpdate(float delta)
 {
+//    if (!m_visible) return ;
     (void)delta;
     m_bounds = Rectangle(m_position.x,m_position.y-20, m_size.x, m_size.y);
     m_bounds_bar = Rectangle(GetRealX(), GetRealY()-20, m_size.x, 20);
@@ -428,6 +469,7 @@ void Window::OnUpdate(float delta)
 void Window::OnMouseMove(int x, int y)
 {
     m_focus = m_bounds.Contains(x, y);
+    if (!m_visible) return ;
     if (m_dragging)
     {
         m_position.x = x - m_dragOffset.x;
@@ -458,50 +500,7 @@ void Window::OnMouseUp(int x, int y, int button)
     m_dragging = false;
 } 
 
-Slider *Window::CreateSlider(bool vertical, float x, float y, float width, float height, float min, float max, float value)
-{
-    Slider *slider = new Slider(vertical, x, y, width, height, min, max, value);
-    slider->m_gui  = this->m_gui;
-    Add(slider);
-    return slider;
-}
 
-Label *Window::CreateLabel(const std::string &text, float x, float y)
-{
-    
-    Label *label = new Label(text, x, y);
-    label->m_gui  = this->m_gui;
-    Add(label);
-    return label;
-
-}
-
-Button *Window::CreateButton(const std::string &text, float x, float y, float width, float height)
-{
-
-    Button *button = new Button(text, x, y, width, height);
-    button->m_gui  = this->m_gui;
-    Add(button);
-    return button;
-
-}
-
-CheckBox *Window::CreateCheckBox(const std::string &text, bool state, float x, float y, float width, float height)
-{
-    
-        CheckBox *checkbox = new CheckBox(text, state, x, y, width, height);
-        checkbox->m_gui  = this->m_gui;
-        Add(checkbox);
-        return checkbox;
- 
-}
-
-KeyframeEditor* Window::CreateKeyframeEditor(float x, float y, float width, float height) {
-    KeyframeEditor* editor = new KeyframeEditor(x, y, width, height);
-    editor->m_gui = this->m_gui;
-    Add(editor);
-    return editor;
-}
 
 Slider::Slider(bool vertical, float x, float y, float width, float height, float min, float max, float value): Widget()
 {
@@ -527,7 +526,7 @@ void Slider::SetValue(float value)
 
 void Slider::OnDraw(RenderBatch *batch)
 {
-    Skin * skin = m_gui->GetSkin();
+    Skin * skin =  GUI::Instance()->GetSkin();
     Font * font = skin->GetFont();
   
     batch->DrawRectangle((int)GetRealX(),(int) GetRealY(), (int)m_size.x,(int) m_size.y, skin->GetColor(SCROLLBAR),true);
@@ -653,7 +652,7 @@ Label::Label(const std::string &text, float x, float y): Widget()
 
 void Label::OnDraw(RenderBatch *batch)
 {
-    Skin * skin = m_gui->GetSkin();
+    Skin * skin = GUI::Instance()->GetSkin();
     Font * font = skin->GetFont();
     
     font->DrawText(batch, m_text.c_str(), GetRealX() , GetRealY() ,skin->GetColor(LABEL));
@@ -676,7 +675,7 @@ Button::Button(const std::string &text, float x, float y, float width, float hei
 
 void Button::OnDraw(RenderBatch *batch)
 {
-    Skin * skin = m_gui->GetSkin();
+    Skin * skin = GUI::Instance()->GetSkin();
     Font * font = skin->GetFont();
     
     if (m_down)
@@ -699,7 +698,7 @@ void Button::OnUpdate(float delta)
     (void)delta;
     if (text_width == 0 || text_height == 0)
     {
-        Skin * skin = m_gui->GetSkin();
+        Skin * skin = GUI::Instance()->GetSkin();
         Font * font = skin->GetFont();
         text_width = font->GetTextWidth(m_text.c_str());
         text_height = font->GetHeight();
@@ -742,7 +741,7 @@ void Button::OnMouseUp(int x, int y, int button)
 
 void Button::OnKeyDown(Uint32 key)
 {
-        if (iskeyMappped && m_gui!=nullptr)  
+        if (iskeyMappped )  
         if (key == m_key && !m_down)
         {
             m_down = true;
@@ -754,7 +753,7 @@ void Button::OnKeyDown(Uint32 key)
 
 void Button::OnKeyUp(Uint32 key)
 {
-        if (iskeyMappped && m_gui!=nullptr)  
+        if (iskeyMappped )  
         if (key == m_key && m_down)
         {
             m_down = false;
@@ -779,7 +778,7 @@ CheckBox::CheckBox(const std::string &text, bool state, float x, float y, float 
 
 void CheckBox::OnDraw(RenderBatch *batch)
 {
-    Skin * skin = m_gui->GetSkin();
+    Skin * skin = GUI::Instance()->GetSkin();
     Font * font = skin->GetFont();
     
     batch->DrawRectangle((int)GetRealX(),(int) GetRealY(), (int)m_size.x,(int) m_size.y, skin->GetColor(BUTTON_FACE),true);
@@ -842,7 +841,7 @@ void CheckBox::OnMouseUp(int x, int y, int button)
 
 void CheckBox::OnKeyDown(Uint32 key)
 {
-        if (iskeyMappped && m_gui!=nullptr)  
+        if (iskeyMappped )  
         if (key == m_key && !m_down)
         {
             m_down = true;
@@ -854,7 +853,7 @@ void CheckBox::OnKeyDown(Uint32 key)
 
 void CheckBox::OnKeyUp(Uint32 key)
 {
-        if (iskeyMappped && m_gui!=nullptr)  
+        if (iskeyMappped )  
         if (key == m_key && m_down)
         {
             m_down = false;
@@ -863,262 +862,3 @@ void CheckBox::OnKeyUp(Uint32 key)
         }
 }
 
-
-
-KeyframeEditor::KeyframeEditor(float x, float y, float width, float height) : Widget() {
-    m_position = Vec2(x, y);
-    m_size = Vec2(width, height);
-    m_currentFrame = 0;
-    m_totalFrames = 100; // 10 segundos a 10 frames por segundo
-    m_trackHeight = 30;
-    m_draggingFrame = false;
-    m_selectedKeyframe = nullptr;
-    m_timelineScale = 1.0f;
-
-    // Criar tracks baseados nas propriedades do objeto
-    CreateTrack("Head Rotation", -180, 180);
-    CreateTrack("Torso Rotation", -180, 180);
-    CreateTrack("Upper Arm L", -180, 180);
-    CreateTrack("Upper Arm R", -180, 180);
-    CreateTrack("Forearm L", -180, 180);
-    CreateTrack("Forearm R", -180, 180);
-    CreateTrack("Thigh L", -180, 180);
-    CreateTrack("Thigh R", -180, 180);
-    CreateTrack("Calf L", -180, 180);
-    CreateTrack("Calf R", -180, 180);
-}
-
-void KeyframeEditor::CreateTrack(const std::string& name, float min, float max) {
-    Track track;
-    track.name = name;
-    track.minValue = min;
-    track.maxValue = max;
-    track.expanded = true;
-    m_tracks.push_back(track);
-}
-
-void KeyframeEditor::OnDraw(RenderBatch* batch) {
-    Skin* skin = m_gui->GetSkin();
-    Font* font = skin->GetFont();
-    
-    // Desenhar background
-    batch->DrawRectangle(GetRealX(), GetRealY(), m_size.x, m_size.y, 
-                        skin->GetColor(WINDOW), true);
-
-    // Desenhar timeline ruler
-    float rulerHeight = 20;
-    batch->DrawRectangle(GetRealX(), GetRealY(), m_size.x, rulerHeight, 
-                        skin->GetColor(WINDOW_TOP_BAR), true);
-
-    // Desenhar marcadores de frame a cada 10 frames
-    for(int i = 0; i <= m_totalFrames; i += 10) {
-        float x = GetRealX() + (i * m_size.x / m_totalFrames);
-        batch->DrawRectangle(x, GetRealY(), 1, rulerHeight, Color::WHITE, true);
-        font->DrawText(batch, std::to_string(i).c_str(), x + 2, GetRealY() + 2, Color::WHITE);
-    }
-
-    // Desenhar tracks
-    float y = GetRealY() + rulerHeight;
-    for(const auto& track : m_tracks) {
-        if(!track.expanded) continue;
-
-        // Track background
-        batch->DrawRectangle(GetRealX(), y, m_size.x, m_trackHeight, 
-                            skin->GetColor(BUTTON_FACE), true);
-        
-        // Track name
-        font->DrawText(batch, track.name.c_str(), GetRealX() + 5, y + 5, 
-                      skin->GetColor(BUTTON_TEXT));
-
-        // Desenhar keyframes
-        for(const auto& keyframe : track.keyframes) {
-            float x = GetRealX() + (keyframe.frame * m_size.x / m_totalFrames);
-            float keyY = y + (m_trackHeight / 2);
-            
-            // Keyframe diamond
-            Color keyColor = keyframe.selected ? Color::YELLOW : Color::WHITE;
-            batch->DrawRectangle(x - 4, keyY - 4, 8, 8, keyColor, true);
-        }
-
-        y += m_trackHeight;
-    }
-
-    // Desenhar cursor de frame atual
-    float cursorX = GetRealX() + (m_currentFrame * m_size.x / m_totalFrames);
-    batch->DrawRectangle(cursorX, GetRealY(), 2, m_size.y, Color::RED, true);
-}
-
-void KeyframeEditor::OnMouseDown(int x, int y, int button) {
-    if(button != 1) return;
-
-    float rulerY = GetRealY();
-    float tracksY = rulerY + 20;
-
-    // Clique na régua do timeline
-    if(y >= rulerY && y < tracksY) {
-        m_currentFrame = ((x - GetRealX()) / m_size.x) * m_totalFrames;
-        m_currentFrame = Clamp(m_currentFrame, 0, m_totalFrames);
-        return;
-    }
-
-    // Clique nos tracks
-    float trackY = tracksY;
-    for(auto& track : m_tracks) {
-        if(!track.expanded) continue;
-
-        if(y >= trackY && y < trackY + m_trackHeight) {
-            // Adicionar novo keyframe com double click
-            if(button == 1) {
-                int frame = ((x - GetRealX()) / m_size.x) * m_totalFrames;
-                frame = Clamp(frame, 0, m_totalFrames);
-                
-                Keyframe keyframe;
-                keyframe.frame = frame;
-                keyframe.value = 0;
-                keyframe.selected = true;
-                
-                track.keyframes.push_back(keyframe);
-                m_selectedKeyframe = &track.keyframes.back();
-            }
-            break;
-        }
-        trackY += m_trackHeight;
-    }
-}
-
-void KeyframeEditor::OnMouseMove(int x, int y) {
-    if(m_selectedKeyframe && (x - GetRealX()) >= 0 && (x - GetRealX()) <= m_size.x) {
-        m_selectedKeyframe->frame = ((x - GetRealX()) / m_size.x) * m_totalFrames;
-        m_selectedKeyframe->frame = Clamp(m_selectedKeyframe->frame, 0, m_totalFrames);
-    }
-}
-
-void KeyframeEditor::OnMouseUp(int x, int y, int button) {
-    if(button == 1) {
-        m_selectedKeyframe = nullptr;
-    }
-}
-
-
-
-WindowKeyframeEditor::WindowKeyframeEditor(const std::string& title, float x, float y, float width, float height)
-    : Window(title, x, y, width, height) {
-    m_currentFrame = 0;
-    m_totalFrames = 100;
-    m_playing = false;
-    m_playbackSpeed = 1.0f;
-    m_selectedKeyframe = nullptr;
-    m_draggingFrame = false;
-    m_frameWidth = 10.0f;
-
-    CreateDefaultControls();
-}
-
-void WindowKeyframeEditor::CreateDefaultControls() {
-    // Criar controles básicos
-    m_playButton = CreateButton("Play", 10, 10, 60, 20);
-    m_stopButton = CreateButton("Stop", 80, 10, 60, 20);
-    m_captureButton = CreateButton("Capture", 150, 10, 60, 20);
-    m_clearButton = CreateButton("Clear", 220, 10, 60, 20);
-    
-    m_frameSlider = CreateSlider(false, 10, 40, m_size.x - 20, 20, 0, m_totalFrames, 0);
-
-    // Configurar callbacks
-    m_playButton->OnClick = [this]() {
-        m_playing = !m_playing;
-        m_playButton->SetText(m_playing ? "Pause" : "Play");
-    };
-
-    m_stopButton->OnClick = [this]() {
-        m_playing = false;
-        m_currentFrame = 0;
-        m_frameSlider->SetValue(0);
-        m_playButton->SetText("Play");
-    };
-
-    m_captureButton->OnClick = [this]() {
-        CaptureKeyframe();
-    };
-
-    m_clearButton->OnClick = [this]() {
-        Clear();
-    };
-
-    m_frameSlider->OnValueChanged = [this](float value) {
-        m_currentFrame = (int)value;
-        if(OnFrameChanged) {
-            OnFrameChanged(m_currentFrame);
-        }
-    };
-
-    m_timelineArea = Rectangle(10, 70, m_size.x - 20, m_size.y - 80);
-}
-
-void WindowKeyframeEditor::CaptureKeyframe() {
-    AnimationKeyframe keyframe;
-    keyframe.frame = m_currentFrame;
-    keyframe.selected = false;
-    //get windo values
-
-    m_keyframes.push_back(keyframe);
-    SortKeyframes();
-}
-
-void WindowKeyframeEditor::OnDraw(RenderBatch* batch) {
-    Window::OnDraw(batch);
-    
-
-    batch->DrawRectangle(GetRealX() + m_timelineArea.x, GetRealY() + m_timelineArea.y, 
-                        m_timelineArea.width, m_timelineArea.height, 
-                        Color(50, 50, 50), true);
-
-
-    for(int i = 0; i <= m_totalFrames; i += 10) {
-        float x = GetRealX() + m_timelineArea.x + (i * m_timelineArea.width / m_totalFrames);
-        batch->DrawRectangle(x, GetRealY() + m_timelineArea.y, 
-                           1, m_timelineArea.height, Color(100, 100, 100), true);
-    }
-
-
-    for(const auto& keyframe : m_keyframes) {
-        float x = GetRealX() + m_timelineArea.x + 
-                 (keyframe.frame * m_timelineArea.width / m_totalFrames);
-        
-        Color keyframeColor = keyframe.selected ? Color::YELLOW : Color::WHITE;
-        batch->DrawRectangle(x - 4, GetRealY() + m_timelineArea.y + m_timelineArea.height/2 - 4,
-                           8, 8, keyframeColor, true);
-    }
-
-
-    float cursorX = GetRealX() + m_timelineArea.x + 
-                   (m_currentFrame * m_timelineArea.width / m_totalFrames);
-    batch->DrawRectangle(cursorX, GetRealY() + m_timelineArea.y,
-                       2, m_timelineArea.height, Color::RED, true);
-}
-
-void WindowKeyframeEditor::OnUpdate(float delta) {
-    Window::OnUpdate(delta);
-    
-    if(m_playing) {
-        m_currentFrame++;
-        if(m_currentFrame >= m_totalFrames) {
-            m_currentFrame = 0;
-        }
-        m_frameSlider->SetValue(m_currentFrame);
-    }
-}
-
-void WindowKeyframeEditor::Clear() {
-    m_keyframes.clear();
-    m_currentFrame = 0;
-    m_frameSlider->SetValue(0);
-    m_playing = false;
-    m_playButton->SetText("Play");
-}
-
-void WindowKeyframeEditor::SortKeyframes() {
-    std::sort(m_keyframes.begin(), m_keyframes.end(), 
-             [](const AnimationKeyframe& a, const AnimationKeyframe& b) {
-                 return a.frame < b.frame;
-             });
-}

@@ -1235,7 +1235,7 @@ Font::Font()
     color.g = 255;
     color.b = 255;
     color.a = 255;
-    fontSize = 25;
+    fontSize = 12;
     spacing = 2;
     maxHeight =1;
     enableClip = false;
@@ -1254,10 +1254,10 @@ Font::Font()
     clip.y = 0;
     clip.width = 0;
     clip.height = 0;
-    m_baseSize = 0;
+    m_baseSize = 10;
     m_glyphCount = 0;
     m_glyphPadding = 0;
-    textLineSpacing = 15;
+    textLineSpacing = 22;
     texture = nullptr;
     batch = nullptr;
 }
@@ -1554,6 +1554,7 @@ void Font::drawTextCodepoint(int codepoint, float x, float y)
     int index = getGlyphIndex(codepoint);
     float scaleFactor = fontSize / m_baseSize;
 
+
     FloatRect srcRec(m_recs[index].x - (float)m_glyphPadding,
                      m_recs[index].y - (float)m_glyphPadding,
                      m_recs[index].width + 2.0f * m_glyphPadding,
@@ -1571,6 +1572,7 @@ void Font::drawTextCodepoint(RenderBatch *batch,int codepoint, float x, float y)
 {
     int index = getGlyphIndex(codepoint);
     float scaleFactor = fontSize / m_baseSize;
+   // m_glyphPadding =8;
 
     FloatRect srcRec(m_recs[index].x - (float)m_glyphPadding,
                      m_recs[index].y - (float)m_glyphPadding,
@@ -2138,7 +2140,7 @@ bool Font::LoadDefaultFont()
     m_glyphPadding = 0;
 
     int charsHeight = 10;
-    int charsDivisor = 1; // Every char is separated from the consecutive by a 1 pixel divisor, horizontally and vertically
+    int charsDivisor = 1;  
 
     Pixmap pixmap(128, 128, 2);
 
