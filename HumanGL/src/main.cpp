@@ -200,6 +200,11 @@ windowTimeLine->Add(timeLine);
 Button *bClear = windowTimeLine->CreateButton("Clear", 20, 50, 80, 20);
 bClear->OnClick = [&]() 
 {
+     Animation *animation= human.GetAnimationManager().getAnimation("manual");
+    if (animation)
+    {
+        animation->clear();
+    }
     timeLine->Clear();
 };
 
@@ -209,45 +214,33 @@ bSet->OnClick = [&]()
     Animation *animation= human.GetAnimationManager().getAnimation("manual");
     if (animation)
     {
+
+        float frame = timeLine->GetSelectedTime();
+
         Pose pose;
         pose.upperArmRotation[0] = human.getUpperArmRotation(false);
         pose.upperArmRotation[1] = human.getUpperArmRotation(true);
         pose.thighRotation[0] = human.getThighRotation(false);
         pose.thighRotation[1] = human.getThighRotation(true);
-        pose.torsoRotation = human.
-    //     pose.headRotation = 
-
-    // float upperArmRotation[2]; // [0] = esquerdo, [1] = direito
-    // float forearmRotation[2];  // [0] = esquerdo, [1] = direito
-    // float thighRotation[2];    // [0] = esquerdo, [1] = direito
-    // float calfRotation[2];     // [0] = esquerdo, [1] = direito
+        pose.torsoRotation = human.getTorsoRotation();
+        pose.headRotation = human.getHeadRotation();
+        pose.calfRotation[0] = human.getCalfRotation(false);
+        pose.calfRotation[1] = human.getCalfRotation(true);
+        pose.forearmRotation[0] = human.getForearmRotation(false);
+        pose.forearmRotation[1] = human.getForearmRotation(true);
+        animation->addKeyframe(pose, frame);
+            
+            
+            
+        
     }
 };
      
 
-Button *bLoad = windowTimeLine->CreateButton("Load", 220, 50, 80, 20);
+Button *bLoad = windowTimeLine->CreateButton("Clear", 220, 50, 80, 20);
 bLoad->OnClick = [&]() 
 {
-    Animation *animation= human.GetAnimationManager().getAnimation("manual");
-    if (animation)
-    {
-        animation->clear();
-        for (int i=0;i<10;i++)
-        {
-
-            float frame = i / 9.0f;
-            if (timeLine->HasKeyframe(frame))
-            {
-                const Pose *pose = timeLine->GetKeyframe(frame);
-                if(pose)
-                {
-                    animation->addKeyframe(*pose,frame);
-                }
-            }
-            
-            
-        }
-    }
+    
 };
 
 
