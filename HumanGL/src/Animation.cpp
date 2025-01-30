@@ -344,7 +344,9 @@ void AnimationManager::createDefaultAnimations()
         pose.upperArmRotation[1] = 0;
         pose.thighRotation[0] = 0;
         pose.thighRotation[1] = 0;
-        float frame = i / 9.0f;
+        pose.headRotation = 0;
+        pose.torsoRotation = 0;
+        float frame = i / 10.0f;
         manual.addKeyframe(pose, frame);
         
     }
